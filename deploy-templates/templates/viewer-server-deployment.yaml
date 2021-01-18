@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.redash.instance.name.viewer }}
+  labels:
+    helm.sh/chart: {{ .Values.redash.instance.name.viewer }}-2.3.0
+    app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
+    app.kubernetes.io/instance: {{ .Values.redash.instance.name.viewer }}
+    app.kubernetes.io/version: {{ .Values.redash.version | squote }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
+      app.kubernetes.io/instance: {{ .Values.redash.instance.name.viewer }}
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
+        app.kubernetes.io/instance: {{ .Values.redash.instance.name.viewer }}
+        app.kubernetes.io/component: server
+      {{- if .Values.server.podAnnotations }}
+      annotations:
+      {{ toYaml .Values.server.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "redash.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.redash.instance.name.viewer }}-server
+          image: "{{ .Values.image.name }}:{{ .Values.image.version }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["-c", ". /config/dynamicenv.sh && /app/bin/docker-entrypoint server"]
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - "sh"
+                - "-c"
+                - bash officer_setup.sh > /dev/null 2>&1 &
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: saml-config
+              mountPath: /app/redash/authentication/saml_auth.py
+              readOnly: true
+              subPath: saml_auth.py
+            - name: officer-config
+              mountPath: /app/officer_setup.sh
+              subPath: officer_setup.sh
+          env:
+            - name: INIT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.setup }}
+                  key: password
+            - name: REDASH_DATABASE_HOSTNAME
+              value: {{ .Values.redash.instance.name.viewer }}-postgresql
+            - name: REDASH_RATELIMIT_ENABLED
+              value: 'false'
+            - name: REDASH_REDIS_HOSTNAME
+              value: {{ .Values.redash.instance.name.viewer }}-redis-master
+            - name: REDASH_SAML_ENTITY_ID
+              value: {{ default  .Values.redash.samlEntityId.viewer | quote }}
+          {{- include "redash.env" . | nindent 12 }}
+          {{- range $key, $value := .Values.server.env }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+          {{- end }}
+            - name: REDASH_SAML_METADATA_URL
+              value: "https://{{ .Values.keycloak.host }}/auth/realms/{{ .Values.namespace }}-{{ .Values.redash.instance.keycloakRealms.viewer }}/protocol/saml/descriptor"
+          envFrom:
+          {{- include "redash.envFrom" . | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.server.httpPort }}
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: {{ .Values.server.httpPort }}
+            # Redash can take a while to come up initially, so we delay checks.
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: {{ .Values.server.httpPort }}
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- if not .Values.global.disableRequestsLimits }}
+          resources:
+{{ toYaml .Values.server.resources | indent 12 }}
+          {{- end }}
+      volumes:
+        - name: saml-config
+          configMap:
+            name: saml-conf
+        - name: officer-config
+          configMap:
+            name: setup-script-cm
+            defaultMode: 0755
+        - name: config
+          configMap:
+            name: {{ include "redash.fullname" . }}
+    {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.server.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.server.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  #name: {{ include "redash.adhocWorker.fullname" . }}
+  name: {{ .Values.redash.instance.name.admin }}-adhocworker
+  labels:
+    helm.sh/chart: {{ .Values.redash.instance.name.admin }}-2.3.0
+    app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/version: {{ .Values.redash.version | squote }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: adhocworker
+spec:
+  replicas: {{ .Values.adhocWorker.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+      app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+      app.kubernetes.io/component: adhocworker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+        app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+        app.kubernetes.io/component: adhocworker
+      {{- if .Values.adhocWorker.podAnnotations }}
+      annotations:
+      {{ toYaml .Values.adhocWorker.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "redash.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.redash.instance.name.admin }}-adhocworker
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.version }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["-c", ". /config/dynamicenv.sh && /app/bin/docker-entrypoint worker"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          env:
+            - name: REDASH_DATABASE_HOSTNAME
+              value: {{ .Values.redash.instance.name.admin }}-postgresql
+            - name: REDASH_REDIS_HOSTNAME
+              value: {{ .Values.redash.instance.name.admin }}-redis-master
+            - name: REDASH_SAML_ENTITY_ID
+              value: {{ default  .Values.redash.samlEntityId.admin | quote }}
+          {{- include "redash.env" . | nindent 12 }}
+          {{- range $key, $value := .Values.adhocWorker.env }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+          {{- end }}
+          envFrom:
+          {{- include "redash.envFrom" . | nindent 12 }}
+          resources:
+{{ toYaml .Values.adhocWorker.resources | indent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "redash.fullname" . }}
+    {{- if .Values.adhocWorker.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.adhocWorker.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- with .Values.adhocWorker.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.adhocWorker.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

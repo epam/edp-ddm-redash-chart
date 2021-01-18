@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saml-conf
+data:
+  saml_auth.py:
+{{ (.Files.Glob "saml_auth.py").AsConfig | indent 2 }}
