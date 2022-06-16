@@ -19,8 +19,8 @@ dnsWildcard: apps.cicd.mdtu-ddm.projects.epam.com
 citus:
   secrets:
     secret:
-      pgsecret_name: citus-secrets
-      user_name: username
+      pgsecret_name: operational-pguser-postgres
+      user_name: user
       pgsecret_key: password
   rolesSecrets:
     secret:
