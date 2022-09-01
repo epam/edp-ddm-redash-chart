@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: publish-dashboard
+data:
+  publish-dashboard.sh: |
+    #!/bin/bash
+
+    # Check if redash is up
+    while ! curl -s -X GET "https://redash-viewer-{{ .Values.namespace }}.{{ .Values.dnsWildcard }}/login" | grep "Login to Redash" ;
+    do echo "Waiting for Redash viewer instance" ; sleep 5 ;
+    done
+
+    # Login to Redash
+    creds=email=user@mail.com\&password=$INIT_SECRET
+    curl -L -c cookies.txt -d "$creds" https://redash-viewer-{{ .Values.namespace }}.{{ .Values.dnsWildcard }}/login >/dev/null
+
+    # Get Redash User API key
+    api_key=$(curl -s -b cookies.txt -X POST "https://redash-viewer-{{ .Values.namespace }}.{{ .Values.dnsWildcard }}/api/users/1/regenerate_api_key" | grep -zoP '"api_key":\s*\K[^\s,]*(?=\s*,)')
+    
+    api_key="${api_key//\"}"
+
+    # Publish dashboard
+    java -jar -DREDASH_URL=https://redash-viewer-{{ .Values.namespace }}.{{ .Values.dnsWildcard }} -DREDASH_API_KEY=$api_key -DPOSTGRES_PASSWORD=$PSQL_PASS -DPOSTGRES_USER=$PSQL_USER -DDB_NAME=audit -DDB_URL=citus-master -DDB_PORT=5432 -DPWD_ADMIN=$ADMIN_ROLE_PASS -DPWD_AUDITOR=$AUDIT_ROLE_PASS app.jar --auditor
+    java -jar -DREDASH_URL=https://redash-viewer-{{ .Values.namespace }}.{{ .Values.dnsWildcard }} -DREDASH_API_KEY=$api_key -DPOSTGRES_PASSWORD=$PSQL_PASS -DPOSTGRES_USER=$PSQL_USER -DDB_NAME=audit -DDB_URL=citus-master -DDB_PORT=5432 -DPWD_ADMIN=$ADMIN_ROLE_PASS -DPWD_AUDITOR=$AUDIT_ROLE_PASS app.jar --reports

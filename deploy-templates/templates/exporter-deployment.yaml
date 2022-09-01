@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.exporter.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.exporter.name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.exporter.name }}
+      annotations:
+        sidecar.istio.io/inject: "false"        
+    spec:
+      containers:
+      - name: {{ .Values.exporter.name }}
+        image: {{ template "imageRegistry" . -}} {{ .Values.exporter.image }}
+        command: ["sh", "-c"]
+        args: ["/redash-exporter -redashHost {{ .Values.redash.instance.name.viewer }}-{{ .Values.namespace }}.{{ .Values.dnsWildcard }} -redashScheme https -redashPort 443"]
+        ports:
+          - name: metrics
+            containerPort: 9295
+            protocol: TCP
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: REDASH_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: redash-api-keys
+                key: viewer-api-key

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.redash.instance.name.admin }}
+  labels:
+    helm.sh/chart: {{ .Values.redash.instance.name.admin }}-2.3.0
+    app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/version: {{ .Values.redash.version | squote }}
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+  {{- with .Values.service.annotations }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.server.httpPort }}
+      protocol: TCP
+      name: http
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/component: server

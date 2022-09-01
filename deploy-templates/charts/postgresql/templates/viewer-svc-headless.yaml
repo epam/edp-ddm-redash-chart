@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redash-viewer-postgresql-headless
+  labels:
+    app: {{ template "postgresql.name" . }}
+    chart: {{ template "postgresql.chart" . }}
+    release: redash-viewer
+    heritage: {{ .Release.Service | quote }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "postgresql.tplValue" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: tcp-postgresql
+      port: {{ template "postgresql.port" . }}
+      targetPort: tcp-postgresql
+  selector:
+    app: postgresql-viewer
+    release: redash-viewer

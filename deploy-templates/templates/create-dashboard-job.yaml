@@ -1,0 +1,89 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "create-dashboard-job"
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "redash.serviceAccountName" . }}
+      restartPolicy: Never
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      - name: check-if-db-is-ready
+        image: {{ template "imageRegistry" . -}} bitnami/postgresql:latest
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - '-c'
+          - >-
+            while ! psql --host=citus-master -U $PSQL_USER -lqt | cut -d \| -f 1 | grep -qw audit; do echo waiting for db; sleep 10; done;
+        env:
+          - name: PSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.secrets.secret.pgsecret_name }}
+                key: {{ .Values.citus.secrets.secret.user_name }}
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.secrets.secret.pgsecret_name }}
+                key: {{ .Values.citus.secrets.secret.pgsecret_key }}
+      containers:
+      - name: {{ .Values.redash.instance.name.viewer }}-create-dashboard-job
+        image: "{{ template "imageRegistry" . -}} {{ .Values.edpProject }}/{{ .Values.image.redashPublisher }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - '-c'
+          - >-
+            bash /app/publish-dashboard.sh
+        volumeMounts:
+          - name: publish-dashboard
+            mountPath: /app/publish-dashboard.sh
+            readOnly: true
+            subPath: publish-dashboard.sh
+        env:
+          - name: REDASH_DATABASE_HOSTNAME
+            value: {{ .Values.redash.instance.name.viewer }}-postgresql
+          - name: REDASH_REDIS_HOSTNAME
+            value: {{ .Values.redash.instance.name.viewer }}-redis-master
+          - name: INIT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.setup }}
+                key: password
+          - name: PSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.secrets.secret.pgsecret_name }}
+                key: {{ .Values.citus.secrets.secret.user_name }}
+          - name: PSQL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.secrets.secret.pgsecret_name }}
+                key: {{ .Values.citus.secrets.secret.pgsecret_key }}
+          - name: AUDIT_ROLE_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.rolesSecrets.secret.pgsecret_name }}
+                key: {{ .Values.citus.rolesSecrets.secret.auditRolePass }}
+          - name: ADMIN_ROLE_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.citus.rolesSecrets.secret.pgsecret_name }}
+                key: {{ .Values.citus.rolesSecrets.secret.adminRolePass }}
+      volumes:
+        - name: publish-dashboard
+          configMap:
+            name: publish-dashboard
+            defaultMode: 0755
