@@ -42,10 +42,10 @@ image:
   # image.repository -- Redash image name used for server and worker pods
   name: nexus-docker-hosted.apps.cicd2.mdtu-ddm.projects.epam.com/mdtu-ddm-edp-cicd/redash-chart-master
   # image.tag -- Redash image [tag](https://hub.docker.com/r/redash/redash/tags)
-  version: 1.5.0-SNAPSHOT.83
+  version: 1.5.0-SNAPSHOT.88
   # image.pullPolicy - Image pull policy
   pullPolicy: IfNotPresent
-  redashPublisher: report-publisher-master:1.6.0.8
+  redashPublisher: report-publisher-master:1.7.0.3
 
 # imagePullSecrets -- Name(s) of secrets to use if pulling images from a private registry
 imagePullSecrets: []
