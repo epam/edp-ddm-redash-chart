@@ -5,7 +5,7 @@ metadata:
     {{ template "admin-routes.whitelist.annotation" . }}
   name: {{ .Values.redash.instance.name.admin }}
 spec:
-  host: {{ .Values.redash.instance.name.admin }}-{{ .Values.namespace }}.{{ .Values.dnsWildcard }}
+  host: {{ .Values.redash.instance.name.admin }}-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }}
   to:
     kind: Service
     name: {{ .Values.redash.instance.name.admin }}

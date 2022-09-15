@@ -71,6 +71,14 @@ Get the secret name.
 {{- end -}}
 {{- end -}}
 
+{{- define "keycloak.host" -}}
+{{- if .Values.keycloak.customHost }}
+{{- .Values.keycloak.customHost }}
+{{- else }}
+{{- .Values.keycloak.host }}
+{{- end }}
+{{- end -}}
+
 {{/*
 Shared environment block used across each component.
 */}}

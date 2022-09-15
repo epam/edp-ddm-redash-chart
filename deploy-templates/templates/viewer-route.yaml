@@ -3,7 +3,7 @@ kind: Route
 metadata:
   name: {{ .Values.redash.instance.name.viewer }}
 spec:
-  host: {{ .Values.redash.instance.name.viewer }}-{{ .Values.namespace }}.{{ .Values.dnsWildcard }}
+  host: {{ .Values.redash.instance.name.viewer }}-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }}
   to:
     kind: Service
     name: {{ .Values.redash.instance.name.viewer }}
