@@ -50,10 +50,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: saml-config
-              mountPath: /app/redash/authentication/saml_auth.py
-              readOnly: true
-              subPath: saml_auth.py
             - name: officer-config
               mountPath: /app/officer_setup.sh
               subPath: officer_setup.sh
@@ -108,9 +104,6 @@ spec:
 {{ toYaml .Values.server.resources | indent 12 }}
           {{- end }}
       volumes:
-        - name: saml-config
-          configMap:
-            name: saml-conf
         - name: officer-config
           configMap:
             name: setup-script-cm
