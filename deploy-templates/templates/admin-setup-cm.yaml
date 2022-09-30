@@ -6,9 +6,7 @@ data:
   admin_setup.sh: |
     #!/bin/bash
 
-    while ! wget localhost:5000/setup; do
-    sleep 5;
-    done
+    while [[ "$(curl -L -s -o /dev/null -w ''%{http_code}'' localhost:5000/setup)" != "200" ]]; do echo waiting for setup page...; sleep 5; done
 
     export DATABASE_URL=postgresql://$REDASH_DATABASE_USER:$REDASH_DATABASE_PASSWORD@$REDASH_DATABASE_HOSTNAME/$REDASH_DATABASE_DB
 
@@ -16,29 +14,27 @@ data:
     default_group_id='2'
 
     #Create Admin user:
-    users=$(/app/bin/run ./manage.py users list)
+    users=$(python ./manage.py users list)
     if [[ $users != *"redash-admin"* ]]; then
-    /app/bin/run ./manage.py users create_root user@mail.com redash-admin --password $INIT_SECRET
+    python ./manage.py users create_root user@mail.com redash-admin --password $INIT_SECRET
 
     # Cut permissions for default group
-    # /app/bin/run ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
+    # python ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
 
     # Return permissions to admin group
-    # /app/bin/run ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
+    # python ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
     fi
 
-    groups=$(/app/bin/run ./manage.py groups list)
+    groups=$(python ./manage.py groups list)
     if [[ $groups != *"Name: redash-admin"* ]]; then
     # Create custom admin group for appropriate Keycloak role
-    /app/bin/run ./manage.py groups create redash-admin --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
+    python ./manage.py groups create redash-admin --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
     fi
 
   officer_setup.sh: |
     #!/bin/bash
 
-    while ! wget localhost:5000/setup; do
-    sleep 5;
-    done
+    while [[ "$(curl -L -s -o /dev/null -w ''%{http_code}'' localhost:5000/setup)" != "200" ]]; do echo waiting for setup page...; sleep 5; done
 
     export DATABASE_URL=postgresql://$REDASH_DATABASE_USER:$REDASH_DATABASE_PASSWORD@$REDASH_DATABASE_HOSTNAME/$REDASH_DATABASE_DB
 
@@ -46,13 +42,13 @@ data:
     default_group_id='2'
 
     #Create Admin user:
-    users=$(/app/bin/run ./manage.py users list)
+    users=$(python ./manage.py users list)
     if [[ $users != *"redash-admin"* ]]; then
-    /app/bin/run ./manage.py users create_root user@mail.com redash-admin --password $INIT_SECRET
+    python ./manage.py users create_root user@mail.com redash-admin --password $INIT_SECRET
 
     # Cut permissions for default group
-    # /app/bin/run ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
+    # python ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
 
     # Return permissions to admin group
-    # /app/bin/run ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
+    # python ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
     fi

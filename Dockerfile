@@ -1,4 +1,4 @@
-FROM redash/redash:8.0.2.b37747 as source
+FROM nexus-docker-registry.apps.cicd2.mdtu-ddm.projects.epam.com/mdtu-ddm-edp-cicd/redash-master:1.7.0-SNAPSHOT.10 as source
 
 FROM python:3.9.6 as local
 COPY --from=source /app/client/dist/app.*.js /app/
@@ -18,3 +18,5 @@ COPY --from=local /app/redash/cli/users.py /app/redash/cli/
 COPY --from=local /app/redash/handlers/setup.py /app/redash/handlers/
 COPY --from=local /app/redash/models/__init__.py /app/redash/models/
 COPY --from=local /app/redash/models/users.py /app/redash/models/
+
+

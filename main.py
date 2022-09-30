@@ -1,10 +1,15 @@
-import pandas as pd
+import csv
 import glob
 
 
 def load_excel_to_dict():
-    tr = pd.read_excel('redash_localization_words.xlsx')
-    return tr.set_index('Text to translate')['Translation'].to_dict()
+    d = {}
+    with open('redash_localization_words.csv', mode='r') as infile:
+        reader = csv.reader(infile)
+        for rows in reader:
+            d[rows[0]] = rows[1]
+
+    return d
 
 
 def wrap_as_variable(str):
@@ -24,6 +29,7 @@ def localize(dict):
         if " " in key:
             file_string = file_string.replace(key, value.replace("'",  "\\'"))
         file_string = file_string.replace(wrap_as_tag(key), wrap_as_tag(value.replace("'", "\\'")))
+        file_string = file_string.replace(wrap_as_variable(key), wrap_as_variable(value.replace("'", "\\'")))
 
     with open(file_path, 'w') as out:
         out.write(file_string)
@@ -42,7 +48,7 @@ def refactor_permissions(refactor_list, change_from, change_to):
             initial = file.read()
             if change_from not in initial:
                 change_from = change_from.replace('"', "'")
-                change_to= change_to.replace('"', "'")
+                change_to = change_to.replace('"', "'")
             refactored = initial.replace(change_from, change_to)
         with open(file_path, 'w') as file:
             file.write(refactored)
@@ -63,11 +69,5 @@ NL = '\n'
 
 
 refactor_permissions(ADMIN_SCRIPT_LIST, f'[{ADMIN_PERMISSIONS_CURRENT}]', f'[{ADMIN_PERMISSIONS_REFACTORED}]')
-# following row is for 10th version
-# refactor_permissions(DEFAULT_SCRIPT_LIST, f'{INDENT}{EDITOR_PERMISSIONS.replace(", ", f",{NL}{INDENT}")},{NL}', '')
-# following row is for 8th version
-refactor_permissions(DEFAULT_SCRIPT_LIST, f'{EDITOR_PERMISSIONS},{NL}', '')
-# following row is for 10th version
-# refactor_permissions(DEFAULT_SCRIPT_LIST, f'{INDENT}{LIST_USERS},{NL}', '')
-# following row is for 8th version
-refactor_permissions(DEFAULT_SCRIPT_LIST, f'{LIST_USERS}, ', '')
+refactor_permissions(DEFAULT_SCRIPT_LIST, f'{INDENT}{EDITOR_PERMISSIONS.replace(", ", f",{NL}{INDENT}")},{NL}', '')
+refactor_permissions(DEFAULT_SCRIPT_LIST, f'{INDENT}{LIST_USERS},{NL}', '')

@@ -1,6 +1,5 @@
 ## Default values for Redash.
 ## This is a YAML-formatted file.
-
 global:
   disableRequestsLimits: false
 
@@ -68,7 +67,7 @@ serviceAccount:
 
 ## Redash application configuration
 redash:
-  version: 8.0.2.b37747
+  version: 10.1.0
   setup: true
   instance:
     name:
@@ -400,7 +399,7 @@ ingress:
 adhocWorker:
   # adhocWorker.env -- Redash ad-hoc worker specific envrionment variables.
   env:
-    QUEUES: "queries,celery"
+    QUEUES: "queries,celery,schemas,default,periodic"
     WORKERS_COUNT: 2
 
   # adhocWorker.replicaCount -- Number of ad-hoc worker pods to run

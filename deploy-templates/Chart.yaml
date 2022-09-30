@@ -1,7 +1,7 @@
 apiVersion: v2
 name: redash-admin
 version: 2.3.0
-appVersion: 8.0.2.b37747
+appVersion: 10.1.0
 description: Redash is an open source tool built for teams to query, visualize and collaborate.
 keywords:
   - redash
