@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  #name: {{ include "redash.adhocWorker.fullname" . }}
   name: {{ .Values.redash.instance.name.admin }}-adhocworker
   labels:
     helm.sh/chart: {{ .Values.redash.instance.name.admin }}-2.3.0
