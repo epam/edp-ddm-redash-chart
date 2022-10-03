@@ -75,7 +75,7 @@ spec:
             - name: REDASH_SAML_METADATA_URL
               value: "https://{{ .Values.keycloak.host }}/auth/realms/{{ .Release.Namespace }}-{{ .Values.redash.instance.keycloakRealms.admin }}/protocol/saml/descriptor"
             - name: REDASH_SAML_REDIRECT_URL
-              value: "https://{{ .Values.keycloak.host }}/auth/realms/{{ .Release.Namespace }}-{{ .Values.redash.instance.keycloakRealms.viewer }}/protocol/saml"
+              value: "https://{{ .Values.keycloak.host }}/auth/realms/{{ .Release.Namespace }}-{{ .Values.redash.instance.keycloakRealms.admin }}/protocol/saml"
           envFrom:
           {{- include "redash.envFrom" . | nindent 12 }}
           ports:
