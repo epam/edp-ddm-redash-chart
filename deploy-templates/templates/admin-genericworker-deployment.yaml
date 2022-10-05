@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.redash.instance.name.admin }}-genericworker
+  labels:
+    app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/version: {{ .Values.redash.version | squote }}
+    app.kubernetes.io/component: genericworker
+spec:
+  replicas: {{ .Values.genericWorker.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+      app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+      app.kubernetes.io/component: genericworker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+        app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+        app.kubernetes.io/component: genericworker
+        {{- if .Values.genericWorker.podLabels }}
+        {{- tpl (toYaml .Values.genericWorker.podLabels) $ | nindent 8 }}
+        {{- end }}
+      {{- if .Values.genericWorker.podAnnotations }}
+      annotations:
+      {{ toYaml .Values.genericWorker.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "redash.serviceAccountName" . }}
+      securityContext:
+      {{- toYaml .Values.genericWorker.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.redash.instance.name.admin }}-genericworker
+          securityContext:
+          {{- toYaml .Values.genericWorker.securityContext | nindent 12 }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.version }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["-c", ". /config/dynamicenv.sh && /app/bin/docker-entrypoint worker"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          {{- with .Values.genericWorker.volumeMounts }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+        {{- include "redash.env" . | nindent 12 }}
+        {{- range $key, $value := .Values.genericWorker.env }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+        {{- end }}
+          envFrom:
+        {{- include "redash.envFrom" . | nindent 12 }}
+          resources:
+  {{ toYaml .Values.genericWorker.resources | indent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "redash.fullname" . }}
+  {{- with .Values.genericWorker.volumes }}
+  {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- if .Values.genericWorker.nodeSelector }}
+      nodeSelector:
+  {{ toYaml .Values.genericWorker.nodeSelector | indent 8 }}
+  {{- end }}
+  {{- with .Values.genericWorker.affinity }}
+      affinity:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
+  {{- with .Values.genericWorker.tolerations }}
+      tolerations:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
