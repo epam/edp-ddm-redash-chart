@@ -50,13 +50,13 @@ spec:
               value: {{ .Values.redash.instance.name.viewer }}-postgresql
             - name: REDASH_REDIS_HOSTNAME
               value: {{ .Values.redash.instance.name.viewer }}-redis-master
+          {{- if .Values.redis.connectionParams }}
+            - name: REDASH_REDIS_CONN_PARAMS
+              value: {{ .Values.redis.connectionParams }}
+          {{- end }}
             - name: REDASH_SAML_ENTITY_ID
               value: {{ default  .Values.redash.samlEntityId.viewer | quote }}
           {{- include "redash.env" . | nindent 12 }}
-          {{- range $key, $value := .Values.adhocWorker.env }}
-            - name: "{{ $key }}"
-              value: "{{ $value }}"
-          {{- end }}
           envFrom:
           {{- include "redash.envFrom" . | nindent 12 }}
           resources:

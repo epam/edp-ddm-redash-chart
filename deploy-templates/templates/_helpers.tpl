@@ -40,10 +40,10 @@ Create a default fully qualified adhocWorker name.
 {{- end -}}
 
 {{/*
-Create a default fully qualified scheduledworker name.
+Create a default fully qualified scheduler name.
 */}}
-{{- define "redash.scheduledWorker.fullname" -}}
-{{- template "redash.fullname" . -}}-scheduledworker
+{{- define "redash.scheduler.fullname" -}}
+{{- template "redash.fullname" . -}}-scheduler
 {{- end -}}
 
 {{/*
