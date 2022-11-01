@@ -1,3 +1,4 @@
+{{- if eq .Values.global.deploymentMode "development" }}
 {{- $serviceAnnotations := coalesce .Values.master.service.annotations .Values.service.annotations -}}
 {{- $serviceType := coalesce .Values.master.service.type .Values.service.type -}}
 {{- $serviceLoadBalancerIP := coalesce .Values.master.service.loadBalancerIP .Values.service.loadBalancerIP -}}
@@ -42,3 +43,4 @@ spec:
     app: postgresql-admin
     release: redash-admin
     role: master
+{{- end }}

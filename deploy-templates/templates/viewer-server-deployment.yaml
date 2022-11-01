@@ -110,7 +110,7 @@ spec:
       volumes:
         - name: officer-config
           configMap:
-            name: setup-script-cm
+            name: viewer-setup-script-cm
             defaultMode: 0755
         - name: config
           configMap:

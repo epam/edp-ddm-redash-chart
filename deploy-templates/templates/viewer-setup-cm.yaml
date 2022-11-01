@@ -1,10 +1,9 @@
-{{- if eq .Values.global.deploymentMode "development" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: admin-setup-script-cm
+  name: viewer-setup-script-cm
 data:
-  admin_setup.sh: |
+  officer_setup.sh: |
     #!/bin/bash
 
     while [[ "$(curl -L -s -o /dev/null -w ''%{http_code}'' localhost:5000/setup)" != "200" ]]; do echo waiting for setup page...; sleep 5; done
@@ -25,10 +24,3 @@ data:
     # Return permissions to admin group
     # python ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
     fi
-
-    groups=$(python ./manage.py groups list)
-    if [[ $groups != *"Name: redash-admin"* ]]; then
-    # Create custom admin group for appropriate Keycloak role
-    python ./manage.py groups create redash-admin --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
-    fi
-{{- end }}

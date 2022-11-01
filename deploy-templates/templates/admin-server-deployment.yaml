@@ -1,3 +1,4 @@
+{{- if eq .Values.global.deploymentMode "development" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -110,7 +111,7 @@ spec:
       volumes:
         - name: admin-config
           configMap:
-            name: setup-script-cm
+            name: admin-setup-script-cm
             defaultMode: 0777
         - name: config
           configMap:
@@ -127,3 +128,4 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+{{- end }}

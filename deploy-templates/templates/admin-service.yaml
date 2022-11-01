@@ -1,3 +1,4 @@
+{{- if eq .Values.global.deploymentMode "development" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -26,3 +27,4 @@ spec:
     app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
     app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
     app.kubernetes.io/component: server
+{{- end }}

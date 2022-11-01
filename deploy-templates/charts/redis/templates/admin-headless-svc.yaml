@@ -1,3 +1,4 @@
+{{- if eq .Values.global.deploymentMode "development" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -23,3 +24,4 @@ spec:
   selector:
     app: redis-admin
     release: {{ .Release.Name }}
+{{- end }}
