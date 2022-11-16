@@ -45,7 +45,7 @@ image:
   version: 1.5.0-SNAPSHOT.94
   # image.pullPolicy - Image pull policy
   pullPolicy: IfNotPresent
-  redashPublisher: report-publisher-master:1.7.0.5
+  redashPublisher: report-publisher-master:1.7.0.8
 
 # imagePullSecrets -- Name(s) of secrets to use if pulling images from a private registry
 imagePullSecrets: []
