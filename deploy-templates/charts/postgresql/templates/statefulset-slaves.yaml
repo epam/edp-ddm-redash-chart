@@ -181,7 +181,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ template "postgresql.secretName" . }}
-                  key: postgresql-password
+                  key: postgresqlPassword
             {{- end }}
           ports:
             - name: tcp-postgresql
