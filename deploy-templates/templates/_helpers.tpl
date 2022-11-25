@@ -98,8 +98,8 @@ Shared environment block used across each component.
 - name: REDASH_DATABASE_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Release.Name }}-postgresql
-      key: postgresql-password
+      name: redash-secrets
+      key: postgresqlPassword
 
 - name: REDASH_DATABASE_PORT
   value: "{{ .Values.postgresql.service.port }}"

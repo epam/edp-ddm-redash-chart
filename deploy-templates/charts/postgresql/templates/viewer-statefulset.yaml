@@ -212,7 +212,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ template "postgresql.secretName" . }}
-                  key: postgresql-password
+                  key: postgresqlPassword
             {{- end }}
             {{- if (include "postgresql.database" .) }}
             - name: POSTGRES_DB
@@ -351,7 +351,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ template "postgresql.secretName" . }}
-                  key: postgresql-password
+                  key: postgresqlPassword
             {{- end }}
             - name: DATA_SOURCE_USER
               value: {{ template "postgresql.username" . }}

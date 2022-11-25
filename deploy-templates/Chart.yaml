@@ -1,5 +1,5 @@
 apiVersion: v2
-name: redash-admin
+name: redash-chart
 version: 2.3.0
 appVersion: 10.1.0
 description: Redash is an open source tool built for teams to query, visualize and collaborate.

@@ -83,7 +83,7 @@ redash:
   ## Note that we document the Redash defaults, but don't explicitly set them.
   ## This allows multiple versions of Redash (which may have different defaults) to be more easily used
   # -- REQUIRED `REDASH_SECRET_KEY` value. Secret key used for data encryption. Stored as a Secret value.
-  secretKey: "dU8gmXyJ3NLW8CaneCfNaa8w9Zod0C4f/i3CbnMsOZg="
+  secretKey: ""
   # -- `REDASH_SAML_SCHEME_OVERRIDE` value. This setting will allow you to override the saml auth url scheme that gets constructed by flask. this is a useful feature if, for example, you're behind a proxy protocol enabled tcp load balancer (aws elb that terminates ssl) and your nginx proxy or similar adds a x-forwarded-proto of http even though your redash url for saml auth is https..
   samlSchemeOverride: ""
   # -- `REDASH_PROXIES_COUNT` value.
@@ -180,7 +180,7 @@ redash:
   # @default -- 3600 \* 12
   jobExpiryTime: ""
   # -- REQUIRED `REDASH_COOKIE_SECRET` value. Stored as a Secret value.
-  cookieSecret: "o1wVQkEVyWb74MSrBdeAGzzaCP8GrxW+TDPPGNKKru4="
+  cookieSecret: ""
   # -- `REDASH_LOG_LEVEL` value.
   # @default -- INFO
   logLevel: ""
@@ -327,7 +327,7 @@ redash:
   ## End primary Redash configuration
   # redash.existingSecret -- Name of existing secret to use instead of either the values above
   ## This secret must contain keys matching the items marked "Stored as a Secret value" above.
-  # existingSecret:
+  existingSecret: redash-secrets
 
 ## Configuration for Redash web server
 server:
@@ -484,7 +484,7 @@ postgresql:
   # postgresql.postgresqlUsername -- PostgreSQL username for redash user (when postgresql chart enabled)
   postgresqlUsername: redash
   # postgresql.postgresqlPassword -- REQUIRED: PostgreSQL password for redash user (when postgresql chart enabled)
-  postgresqlPassword: "n4xenjIZ/uVj/MhfaW/BEzCVo7NdcYzSWeI+0XrN1J0="
+  postgresqlPassword: ""
   # postgresql.postgresqlDatabase -- PostgreSQL database name (when postgresql chart enabled)
   postgresqlDatabase: redash
   service:
