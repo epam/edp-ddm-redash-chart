@@ -7,7 +7,7 @@ data:
     #!/bin/bash
 
     # Check if redash is up
-    while ! curl -s -X GET "https://redash-viewer-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }}/login" | grep "Login to Redash" ;
+    while ! curl -Ls -X GET "https://redash-viewer-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }}/login" | grep "Sign in to" ;
     do echo "Waiting for Redash viewer instance" ; sleep 5 ;
     done
 
