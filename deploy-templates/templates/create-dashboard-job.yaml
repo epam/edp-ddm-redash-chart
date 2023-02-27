@@ -57,11 +57,16 @@ spec:
             value: {{ .Values.redash.instance.name.viewer }}-postgresql
           - name: REDASH_REDIS_HOSTNAME
             value: {{ .Values.redash.instance.name.viewer }}-redis-master
-          - name: INIT_SECRET
+          - name: SYSTEM_ADMIN_PASS
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.secrets.setup }}
+                name: {{ .Values.redash.system.admin.secret }}
                 key: password
+          - name: SYSTEM_ADMIN_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.redash.system.admin.secret }}
+                key: email
           - name: PSQL_USER
             valueFrom:
               secretKeyRef:

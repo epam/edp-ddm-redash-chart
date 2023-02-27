@@ -54,11 +54,16 @@ spec:
               mountPath: /app/officer_setup.sh
               subPath: officer_setup.sh
           env:
-            - name: INIT_SECRET
+            - name: SYSTEM_ADMIN_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secrets.setup }}
+                  name: {{ .Values.redash.system.admin.secret }}
                   key: password
+            - name: SYSTEM_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redash.system.admin.secret }}
+                  key: email
             - name: REDASH_DATABASE_HOSTNAME
               value: {{ .Values.redash.instance.name.viewer }}-postgresql
             - name: REDASH_RATELIMIT_ENABLED

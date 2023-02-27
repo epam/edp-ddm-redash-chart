@@ -15,8 +15,6 @@ monitoring:
   jobLabel: app
 port: 9295
 
-dnsWildcard: apps.cicd.mdtu-ddm.projects.epam.com
-
 citus:
   secrets:
     secret:
@@ -36,7 +34,6 @@ roles:
 
 secrets:
   users: redash-users-secrets
-  setup: redash-setup-secret
 
 image:
   # image.repository -- Redash image name used for server and worker pods
@@ -68,6 +65,9 @@ serviceAccount:
 
 ## Redash application configuration
 redash:
+  system:
+    admin:
+      secret: redash-system-admin-creds
   version: 10.1.0
   setup: true
   instance:
