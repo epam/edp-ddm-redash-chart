@@ -17,7 +17,7 @@ spec:
       serviceAccountName: {{ include "redash.serviceAccountName" . }}
       restartPolicy: Never
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        runAsUser: {{ .Values.podSecurityContext.runAsUser }}
       initContainers:
       - name: check-if-db-is-ready
         image: {{ template "imageRegistry" . -}} bitnami/postgresql:latest
