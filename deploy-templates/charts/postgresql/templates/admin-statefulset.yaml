@@ -40,6 +40,7 @@ spec:
         release: redash-admin
         heritage: {{ .Release.Service | quote }}
         role: master
+        collect.logs: "plain-text"
       {{- with .Values.master.podLabels }}
       {{- toYaml . | nindent 8 }}
       {{- end }}

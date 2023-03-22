@@ -13,8 +13,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.exporter.name }}
+        collect.logs: "plain-text"
       annotations:
-        sidecar.istio.io/inject: "false"        
+        sidecar.istio.io/inject: "false"
     spec:
       containers:
       - name: {{ .Values.exporter.name }}

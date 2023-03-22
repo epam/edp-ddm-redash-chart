@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
         app.kubernetes.io/instance: {{ .Values.redash.instance.name.viewer }}
         app.kubernetes.io/component: scheduler
+        collect.logs: "plain-text"
       {{- if .Values.scheduler.podAnnotations }}
       annotations:
       {{ toYaml .Values.scheduler.podAnnotations | nindent 8 }}
