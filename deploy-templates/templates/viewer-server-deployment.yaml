@@ -65,6 +65,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.redash.system.admin.secret }}
                   key: email
+            - name: REDASH_ROUTE_PREFIX
+              value: 'reports'
             - name: REDASH_DATABASE_HOSTNAME
               value: {{ .Values.redash.instance.name.viewer }}-postgresql
             - name: REDASH_RATELIMIT_ENABLED
@@ -92,7 +94,7 @@ spec:
             - containerPort: {{ .Values.server.httpPort }}
           livenessProbe:
             httpGet:
-              path: /ping
+              path: /reports/ping
               port: {{ .Values.server.httpPort }}
             # Redash can take a while to come up initially, so we delay checks.
             initialDelaySeconds: 90
@@ -102,7 +104,7 @@ spec:
             failureThreshold: 10
           readinessProbe:
             httpGet:
-              path: /ping
+              path: /reports/ping
               port: {{ .Values.server.httpPort }}
             initialDelaySeconds: 10
             timeoutSeconds: 1

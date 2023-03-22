@@ -986,3 +986,7 @@ required "A secure random value for .postgresql.postgresqlPassword is required" 
 {{- define "admin-routes.whitelist.annotation" -}}
 haproxy.router.openshift.io/ip_whitelist: {{ (include "admin-routes.whitelist.cidr" . | default "0.0.0.0/0") | quote }}
 {{- end -}}
+
+{{- define "redashHost" -}}
+officer-portal-{{ .Values.cdPipelineName }}-{{ .Values.cdPipelineStageName }}.{{ .Values.dnsWildcard }}/reports
+{{- end -}}

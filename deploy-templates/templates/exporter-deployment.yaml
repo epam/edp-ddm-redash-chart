@@ -21,7 +21,7 @@ spec:
       - name: {{ .Values.exporter.name }}
         image: {{ template "imageRegistry" . -}} {{ .Values.exporter.image }}
         command: ["sh", "-c"]
-        args: ["/redash-exporter -redashHost {{ .Values.redash.instance.name.viewer }}-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }} -redashScheme https -redashPort 443"]
+        args: ["/redash-exporter -redashHost {{ template "redashHost" . }} -redashScheme https -redashPort 443"]
         ports:
           - name: metrics
             containerPort: 9295

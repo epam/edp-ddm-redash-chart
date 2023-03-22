@@ -8,7 +8,7 @@ data:
 
     counter=1
     threshold=30
-    while [[ ! "200 302" =~ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:5000/setup)" ]];
+    while [[ ! "200 302" =~ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:5000/reports/setup)" ]];
     do echo waiting for setup page... attempt $counter/$threshold;
     let counter=counter+1; sleep 20;
     if [ $counter -ge $threshold ]; then break; fi
