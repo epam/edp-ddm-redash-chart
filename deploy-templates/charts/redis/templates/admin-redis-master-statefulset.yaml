@@ -23,6 +23,7 @@ spec:
         chart: {{ template "redis.chart" . }}
         release: {{ .Release.Name }}
         role: master
+        collect.logs: "plain-text"
       {{- if .Values.master.podLabels }}
       {{- toYaml .Values.master.podLabels | nindent 8 }}
       {{- end }}
