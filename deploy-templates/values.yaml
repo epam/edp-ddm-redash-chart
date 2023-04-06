@@ -34,6 +34,8 @@ roles:
 
 secrets:
   users: redash-users-secrets
+  redashAdmin: redash-admin-secret
+  redashViewer: redash-viewer-secret
 
 image:
   # image.repository -- Redash image name used for server and worker pods
@@ -327,7 +329,8 @@ redash:
   ## End primary Redash configuration
   # redash.existingSecret -- Name of existing secret to use instead of either the values above
   ## This secret must contain keys matching the items marked "Stored as a Secret value" above.
-  existingSecret: redash-secrets
+  existingSecretAdmin: redash-admin-secret
+  existingSecretViewer: redash-viewer-secret
 
 ## Configuration for Redash web server
 server:

@@ -134,7 +134,8 @@ postgresqlUsername: postgres
 # postgresqlPassword:
 
 ## PostgreSQL password using existing secret
-existingSecret: redash-secrets
+existingSecretAdmin: redash-admin-secret
+existingSecretViewer: redash-viewer-secret
 
 ## Mount PostgreSQL secret as a file instead of passing environment variable
 # usePasswordFile: false

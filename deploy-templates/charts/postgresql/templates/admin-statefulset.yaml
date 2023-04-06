@@ -180,7 +180,7 @@ spec:
             - name: POSTGRES_REPLICATION_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "postgresql.secretName" . }}
+                  name: {{ template "postgresql.secretNameAdmin" . }}
                   key: postgresql-replication-password
             {{- end }}
             {{- if not (eq .Values.replication.synchronousCommit "off")}}
@@ -200,7 +200,7 @@ spec:
             - name: POSTGRES_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "postgresql.secretName" . }}
+                  name: {{ template "postgresql.secretNameAdmin" . }}
                   key: postgresql-postgres-password
             {{- end }}
             {{- end }}
@@ -213,7 +213,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "postgresql.secretName" . }}
+                  name: {{ template "postgresql.secretNameAdmin" . }}
                   key: postgresqlPassword
             {{- end }}
             {{- if (include "postgresql.database" .) }}
@@ -248,7 +248,7 @@ spec:
             - name: POSTGRESQL_LDAP_BIND_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "postgresql.secretName" . }}
+                  name: {{ template "postgresql.secretNameAdmin" . }}
                   key: postgresql-ldap-password
             {{- end}}
             - name: POSTGRESQL_LDAP_SEARCH_ATTR
@@ -352,7 +352,7 @@ spec:
             - name: DATA_SOURCE_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "postgresql.secretName" . }}
+                  name: {{ template "postgresql.secretNameAdmin" . }}
                   key: postgresqlPassword
             {{- end }}
             - name: DATA_SOURCE_USER
@@ -414,7 +414,7 @@ spec:
         {{- if .Values.usePasswordFile }}
         - name: postgresql-password
           secret:
-            secretName: {{ template "postgresql.secretName" . }}
+            secretName: {{ template "postgresql.secretNameAdmin" . }}
         {{- end }}
         {{- if  or (.Files.Glob "files/docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}
         - name: custom-init-scripts

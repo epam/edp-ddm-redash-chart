@@ -217,11 +217,21 @@ Also, we can't use a single if because lazy evaluation is not an option
 {{/*
 Get the password secret.
 */}}
-{{- define "postgresql.secretName" -}}
-{{- if .Values.global.postgresql.existingSecret }}
-    {{- printf "%s" (tpl .Values.global.postgresql.existingSecret $) -}}
-{{- else if .Values.existingSecret -}}
-    {{- printf "%s" (tpl .Values.existingSecret $) -}}
+{{- define "postgresql.secretNameAdmin" -}}
+{{- if .Values.global.postgresql.existingSecretAdmin }}
+    {{- printf "%s" (tpl .Values.global.postgresql.existingSecretAdmin $) -}}
+{{- else if .Values.existingSecretAdmin -}}
+    {{- printf "%s" (tpl .Values.existingSecretAdmin $) -}}
+{{- else -}}
+    {{- printf "%s" (include "postgresql.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "postgresql.secretNameViewer" -}}
+{{- if .Values.global.postgresql.existingSecretViewer }}
+    {{- printf "%s" (tpl .Values.global.postgresql.existingSecretViewer $) -}}
+{{- else if .Values.existingSecretViewer -}}
+    {{- printf "%s" (tpl .Values.existingSecretViewer $) -}}
 {{- else -}}
     {{- printf "%s" (include "postgresql.fullname" .) -}}
 {{- end -}}
@@ -230,9 +240,17 @@ Get the password secret.
 {{/*
 Return true if a secret object should be created
 */}}
-{{- define "postgresql.createSecret" -}}
-{{- if .Values.global.postgresql.existingSecret }}
-{{- else if .Values.existingSecret -}}
+{{- define "postgresql.createSecret.admin" -}}
+{{- if .Values.global.postgresql.existingSecretAdmin }}
+{{- else if .Values.existingSecretAdmin -}}
+{{- else -}}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "postgresql.createSecret.viewer" -}}
+{{- if .Values.global.postgresql.existingSecretViewer }}
+{{- else if .Values.existingSecretViewer -}}
 {{- else -}}
     {{- true -}}
 {{- end -}}
