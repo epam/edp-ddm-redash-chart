@@ -1,4 +1,4 @@
-FROM nexus-docker-registry.apps.cicd2.mdtu-ddm.projects.epam.com/mdtu-ddm-edp-cicd/redash-master:1.7.0-SNAPSHOT.26 as source
+FROM nexus-docker-registry.apps.cicd2.mdtu-ddm.projects.epam.com/mdtu-ddm-edp-cicd/redash-master:1.7.0-SNAPSHOT.19 as source
 
 FROM python:3.9.6 as local
 COPY --from=source /app/client/dist/app.*.js /app/
