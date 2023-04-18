@@ -58,7 +58,7 @@ spec:
           {{- end }}
             - name: REDASH_SAML_ENTITY_ID
               value: {{ default  .Values.redash.samlEntityId.admin | quote }}
-          {{- include "redash.env.admin" . | nindent 12 }}
+          {{- include "redash.env" . | nindent 12 }}
           envFrom:
           {{- include "redash.envFrom" . | nindent 12 }}
           resources:
