@@ -21,9 +21,12 @@ void call() {
                 "-n $NAMESPACE | base64 --decode", returnStdout: true)
         String psqlCommand = "\\\"UPDATE users SET email='$newEmail' WHERE id=1;\\\""
         String bashCommand = "\"export PGPASSWORD=$redashDbPassword; psql -d redash -U redash -c $psqlCommand\""
-                ["admin", "viewer"].each {
-            sh(script: "set +x; oc exec redash-$it-postgresql-0 -n $NAMESPACE -- bash -c $bashCommand")
+        sh(script: "set +x; oc exec redash-viewer-postgresql-0 -n $NAMESPACE -- bash -c $bashCommand")
+        String isAdminInstanceExists = sh(script: "oc -n $NAMESPACE get pod redash-admin-postgresql-0 2> /dev/null", returnStatus: true)
+        if (isAdminInstanceExists == '0') {
+            sh(script: "set +x; oc exec redash-admin-postgresql-0 -n $NAMESPACE -- bash -c $bashCommand")
         }
+
         //Patch secret
         sh(script: "oc annotate --overwrite secret $newSecretName meta.helm.sh/release-name='redash-chart' -n $NAMESPACE || :")
         sh(script: "oc annotate --overwrite secret $newSecretName meta.helm.sh/release-namespace=$NAMESPACE -n $NAMESPACE || :")
