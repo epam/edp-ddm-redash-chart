@@ -41,7 +41,7 @@ spec:
             value: {{ .Values.redash.instance.name.viewer }}-redis-master
           - name: REDASH_SAML_ENTITY_ID
             value: {{ default  .Values.redash.samlEntityId.viewer | quote }}
-        {{- include "redash.env" . | nindent 10 }}
+        {{- include "redash.env.viewer" . | nindent 10 }}
         {{- range $key, $value := .Values.server.env }}
           - name: "{{ $key }}"
             value: "{{ $value }}"
