@@ -11,12 +11,12 @@ PostgreSQL can be accessed via port {{ template "postgresql.port" . }} on the fo
 
 To get the password for "postgres" run:
 
-    export POSTGRES_ADMIN_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "postgresql.secretName" . }} -o jsonpath="{.data.postgresql-postgres-password}" | base64 --decode)
+    export POSTGRES_ADMIN_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "postgresql.secretNameViewer" . }} -o jsonpath="{.data.postgresql-postgres-password}" | base64 --decode)
 {{- end }}
 
 To get the password for "{{ template "postgresql.username" . }}" run:
 
-    export POSTGRES_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "postgresql.secretName" . }} -o jsonpath="{.data.postgresqlPassword}" | base64 --decode)
+    export POSTGRES_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "postgresql.secretNameViewer" . }} -o jsonpath="{.data.postgresqlPassword}" | base64 --decode)
 
 To connect to your database run the following command:
 
