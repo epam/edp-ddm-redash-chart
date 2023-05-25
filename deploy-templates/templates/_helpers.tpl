@@ -990,3 +990,18 @@ haproxy.router.openshift.io/ip_whitelist: {{ (include "admin-routes.whitelist.ci
 {{- define "redashHost" -}}
 officer-portal-{{ .Values.cdPipelineName }}-{{ .Values.cdPipelineStageName }}.{{ .Values.dnsWildcard }}/reports
 {{- end -}}
+
+{{/*
+Define redash-admin URL
+*/}}
+{{- define "edp.hostnameSuffix" -}}
+{{- printf "%s-%s.%s" .Values.cdPipelineName .Values.cdPipelineStageName .Values.dnsWildcard }}
+{{- end }}
+
+{{- define "admin-tools.hostname" -}}
+{{- printf "admin-tools-%s" (include "edp.hostnameSuffix" .) }}
+{{- end }}
+
+{{- define "admin-tools.redashAdminUrl" -}}
+{{- printf "%s%s/%s" "https://" (include "admin-tools.hostname" .) .Values.redash.system.admin.basePath }}
+{{- end }}

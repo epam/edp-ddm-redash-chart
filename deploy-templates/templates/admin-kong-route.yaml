@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: admin-tools-redash-admin
+  annotations:
+    konghq.com/preserve-host: 'false'
+    konghq.com/protocols: 'http,https'
+  labels:
+    helm.sh/chart: {{ .Values.redash.instance.name.admin }}-2.3.0
+    app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
+    app.kubernetes.io/version: {{ .Values.redash.version | squote }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: server
+spec:
+  ingressClassName: kong-admin-tools
+  rules:
+    - host: {{ template "admin-tools.hostname" . }}
+      http:
+        paths:
+          - path: /{{ .Values.redash.system.admin.basePath }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: admin-tools-redash-admin
+                port:
+                  number: {{ .Values.server.httpPort }}

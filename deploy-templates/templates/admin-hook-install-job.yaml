@@ -36,6 +36,8 @@ spec:
           - name: config
             mountPath: /config
         env:
+          - name: REDASH_ROUTE_PREFIX
+            value: 'reports'
           - name: REDASH_DATABASE_HOSTNAME
             value: {{ .Values.redash.instance.name.admin }}-postgresql
           - name: REDASH_REDIS_HOSTNAME
