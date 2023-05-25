@@ -70,6 +70,7 @@ redash:
   system:
     admin:
       secret: redash-system-admin-creds
+      basePath: reports
   version: 10.1.0
   setup: true
   instance:

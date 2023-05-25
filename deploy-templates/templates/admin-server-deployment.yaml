@@ -56,6 +56,8 @@ spec:
               mountPath: /app/admin_setup.sh
               subPath: admin_setup.sh
           env:
+            - name: REDASH_ROUTE_PREFIX
+              value: 'reports'
             - name: SYSTEM_ADMIN_PASS
               valueFrom:
                 secretKeyRef:
@@ -93,7 +95,7 @@ spec:
             - containerPort: {{ .Values.server.httpPort }}
           livenessProbe:
             httpGet:
-              path: /ping
+              path: /reports/ping
               port: {{ .Values.server.httpPort }}
             # Redash can take a while to come up initially, so we delay checks.
             initialDelaySeconds: 90
@@ -103,7 +105,7 @@ spec:
             failureThreshold: 10
           readinessProbe:
             httpGet:
-              path: /ping
+              path: /reports/ping
               port: {{ .Values.server.httpPort }}
             initialDelaySeconds: 10
             timeoutSeconds: 1
