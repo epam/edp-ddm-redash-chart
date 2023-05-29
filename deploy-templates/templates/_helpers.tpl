@@ -1005,3 +1005,11 @@ Define redash-admin URL
 {{- define "admin-tools.redashAdminUrl" -}}
 {{- printf "%s%s/%s" "https://" (include "admin-tools.hostname" .) .Values.redash.system.admin.basePath }}
 {{- end }}
+
+{{- define "horizontalPodAutoscaler.apiVersion" }}
+{{- if eq .Values.global.clusterVersion "4.9.0" }}
+{{- printf "%s" "autoscaling/v2beta2" }}
+{{- else }}
+{{- printf "%s" "autoscaling/v2" }}
+{{- end }}
+{{- end }}
