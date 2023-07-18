@@ -22,7 +22,7 @@ data:
     #Create Admin user:
     users=$(python ./manage.py users list)
     if [[ $users != *"$SYSTEM_ADMIN_EMAIL"* ]]; then
-    python ./manage.py users create_root $SYSTEM_ADMIN_EMAIL redash-admin --password $SYSTEM_ADMIN_PASS
+    python ./manage.py users create_root $SYSTEM_ADMIN_EMAIL system-admin-user-do-not-disable --password $SYSTEM_ADMIN_PASS
 
     # Cut permissions for default group
     # python ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
