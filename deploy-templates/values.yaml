@@ -558,6 +558,6 @@ podSecurityContext:
   runAsUser: 0
 
 edpComponent:
-  description: "Користувацький інтерфейс для створення та налаштування аналітичних звітів та дашбордів"
+  description: "Користувацький інтерфейс для створення та налаштування аналітичних звітів та дашбордів."
   displayName: "Веб-інтерфейс моделювання звітів (Redash Admin)"
   operationalZone: "registry-administration-zone"
