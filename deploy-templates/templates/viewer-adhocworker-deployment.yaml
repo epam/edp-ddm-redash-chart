@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: adhocworker
 spec:
-  replicas: {{ .Values.adhocWorker.replicaCount }}
+  replicas: {{ .Values.global.registry.redashViewerAdhocworker.replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
@@ -49,8 +49,6 @@ spec:
           env:
             - name: REDASH_ROUTE_PREFIX
               value: 'reports'
-            - name: REDASH_DATABASE_HOSTNAME
-              value: {{ .Values.redash.instance.name.viewer }}-postgresql
             - name: REDASH_REDIS_HOSTNAME
               value: {{ .Values.redash.instance.name.viewer }}-redis-master
           {{- if .Values.redis.connectionParams }}
@@ -62,8 +60,10 @@ spec:
           {{- include "redash.env.viewer" . | nindent 12 }}
           envFrom:
           {{- include "redash.envFrom" . | nindent 12 }}
+          {{- if .Values.global.container.requestsLimitsEnabled }}
           resources:
-{{ toYaml .Values.adhocWorker.resources | indent 12 }}
+            {{- toYaml .Values.global.registry.redashViewerAdhocworker.container.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config
           configMap:

@@ -48,8 +48,6 @@ spec:
           env:
             - name: REDASH_ROUTE_PREFIX
               value: 'reports'
-            - name: REDASH_DATABASE_HOSTNAME
-              value: {{ .Values.redash.instance.name.viewer }}-postgresql
             - name: REDASH_REDIS_HOSTNAME
               value: {{ .Values.redash.instance.name.viewer }}-redis-master
           {{- if .Values.redis.connectionParams }}
@@ -61,8 +59,10 @@ spec:
           {{- include "redash.env.viewer" . | nindent 12 }}
           envFrom:
           {{- include "redash.envFrom" . | nindent 12 }}
+          {{- if .Values.global.container.requestsLimitsEnabled }}
           resources:
-{{ toYaml .Values.scheduler.resources | indent 12 }}
+            {{- toYaml .Values.global.registry.redashViewerScheduler.container.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config
           configMap:

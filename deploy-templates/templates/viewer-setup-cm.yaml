@@ -18,15 +18,31 @@ data:
 
     default_admin_group_id='1'
     default_group_id='2'
+    
+    default_admin_permissions='admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_source,execute_query,list_users'
+    default_permissions='view_query,schedule_query,list_dashboards,list_alerts,list_data_sources'
 
     #Create Admin user:
     users=$(python ./manage.py users list)
     if [[ $users != *"$SYSTEM_ADMIN_EMAIL"* ]]; then
     python ./manage.py users create_root $SYSTEM_ADMIN_EMAIL system-admin-user-do-not-disable --password $SYSTEM_ADMIN_PASS
+    fi
 
-    # Cut permissions for default group
-    # python ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
+    # Cut permissions for default group    
+    python ./manage.py groups change_permissions $default_group_id --permissions $default_permissions
 
     # Return permissions to admin group
-    # python ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
-    fi
+    python ./manage.py groups change_permissions $default_admin_group_id --permissions $default_admin_permissions
+
+    # Get the list of all groups
+    groups=$(python ./manage.py groups list)
+
+    # Extract the Group Ids    
+    ids=$(echo "$groups" | grep -oP 'Id: \K\d+')
+
+    # Iterate over the Ids and change the permissions to default
+    for id in $ids; do
+      if [[ "$id" != "$default_admin_group_id" && "$id" != "$default_group_id" ]]; then
+        python ./manage.py groups change_permissions $id --permissions $default_permissions
+      fi
+    done

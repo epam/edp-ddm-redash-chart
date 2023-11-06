@@ -101,8 +101,10 @@ Shared environment block used across each component.
   value: {{ default "" .Values.externalPostgreSQL | quote }}
   {{- end }}
 {{- else }}
+- name: REDASH_DATABASE_HOSTNAME
+  value: {{ .Values.postgresql.connectionParam.common.dbHost }}
 - name: REDASH_DATABASE_USER
-  value: "{{ .Values.postgresql.postgresqlUsername }}"
+  value: {{ .Values.postgresql.connectionParam.admin.dbUser }}
 - name: REDASH_DATABASE_PASSWORD
   valueFrom:
     secretKeyRef:
@@ -112,7 +114,7 @@ Shared environment block used across each component.
 - name: REDASH_DATABASE_PORT
   value: "{{ .Values.postgresql.service.port }}"
 - name: REDASH_DATABASE_DB
-  value: "{{ .Values.postgresql.postgresqlDatabase }}"
+  value: {{ .Values.postgresql.connectionParam.admin.dbName}}
 {{- end }}
 {{- if not .Values.redis.enabled }}
 - name: REDASH_REDIS_URL
@@ -504,6 +506,9 @@ Shared environment block used across each component.
 - name: REDASH_WEB_WORKERS
   value: {{ default  .Values.redash.webWorkers | quote }}
 {{- end }}
+
+- name: REDASH_WEB_TIMEOUT
+  value: "{{ .Values.redash.webTimeout }}"
 ## End primary Redash Admin configuration
 {{- end -}}
 
@@ -518,8 +523,10 @@ Shared environment block used across each component.
   value: {{ default "" .Values.externalPostgreSQL | quote }}
   {{- end }}
 {{- else }}
+- name: REDASH_DATABASE_HOSTNAME
+  value: {{ .Values.postgresql.connectionParam.common.dbHost }}
 - name: REDASH_DATABASE_USER
-  value: "{{ .Values.postgresql.postgresqlUsername }}"
+  value: {{ .Values.postgresql.connectionParam.viewer.dbUser }}
 - name: REDASH_DATABASE_PASSWORD
   valueFrom:
     secretKeyRef:
@@ -529,7 +536,7 @@ Shared environment block used across each component.
 - name: REDASH_DATABASE_PORT
   value: "{{ .Values.postgresql.service.port }}"
 - name: REDASH_DATABASE_DB
-  value: "{{ .Values.postgresql.postgresqlDatabase }}"
+  value: {{ .Values.postgresql.connectionParam.viewer.dbName }}
 {{- end }}
 {{- if not .Values.redis.enabled }}
 - name: REDASH_REDIS_URL
@@ -921,6 +928,9 @@ Shared environment block used across each component.
 - name: REDASH_WEB_WORKERS
   value: {{ default  .Values.redash.webWorkers | quote }}
 {{- end }}
+
+- name: REDASH_WEB_TIMEOUT
+  value: "{{ .Values.redash.webTimeout }}"
 ## End primary Redash Viewer configuration
 {{- end -}}
 
@@ -1012,4 +1022,18 @@ Define redash-admin URL
 {{- else }}
 {{- printf "%s" "autoscaling/v2" }}
 {{- end }}
+{{- end }}
+
+{{- define "redash.admin.dbSecret" }}
+{{- $citusSecret := (lookup "v1" "Secret" .Release.Namespace  .Values.citus.rolesSecrets.secret.pgsecret_name) }}
+{{- $secretData := (get $citusSecret "data") }}
+{{- $dataBasePassword := (get $secretData "redashAdminRolePass") | default dict }}
+{{- $dataBasePassword }}
+{{- end }}
+
+{{- define "redash.viewer.dbSecret"}}
+{{- $citusSecret := (lookup "v1" "Secret" .Release.Namespace  .Values.citus.rolesSecrets.secret.pgsecret_name) }}
+{{- $secretData := (get $citusSecret "data") }}
+{{- $dataBasePassword := (get $secretData "redashViewerRolePass") | default dict }}
+{{- $dataBasePassword }}
 {{- end }}

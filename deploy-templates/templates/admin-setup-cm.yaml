@@ -19,22 +19,43 @@ data:
 
     default_admin_group_id='1'
     default_group_id='2'
+        
+    default_admin_permissions='admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_source,execute_query,list_users'
+    default_permissions='view_query,schedule_query,list_dashboards,list_alerts,list_data_sources'
 
     #Create Admin user:
     users=$(python ./manage.py users list)
     if [[ $users != *"$SYSTEM_ADMIN_EMAIL"* ]]; then
     python ./manage.py users create_root $SYSTEM_ADMIN_EMAIL system-admin-user-do-not-disable --password $SYSTEM_ADMIN_PASS
-
+    fi
+    
     # Cut permissions for default group
-    # python ./manage.py groups change_permissions $default_group_id --permissions view_query,view_source,execute_query,list_dashboards,list_alerts
+    python ./manage.py groups change_permissions $default_group_id --permissions $default_permissions
 
     # Return permissions to admin group
-    # python ./manage.py groups change_permissions $default_admin_group_id --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
-    fi
+    python ./manage.py groups change_permissions $default_admin_group_id --permissions $default_admin_permissions
 
     groups=$(python ./manage.py groups list)
+    
+    # Extract the Group Ids
+    ids=$(echo "$groups" | grep -oP 'Id: \K\d+')
+
+    # Iterate over the Ids and change the permissions to default
+    for id in $ids; do
+      # Check if the group is "redash-admin"
+      if echo "$groups" | grep -A 5 -w "Id: $id" | grep -q "Name: redash-admin"; then
+        # Update permissions for "redash-admin" group
+        python ./manage.py groups change_permissions $id --permissions $default_admin_permissions
+      else
+        # Update permissions for non-builtin groups
+        if [[ "$id" != "$default_admin_group_id" && "$id" != "$default_group_id" ]]; then
+          python ./manage.py groups change_permissions $id --permissions $default_permissions
+        fi
+      fi
+    done
+    
     if [[ $groups != *"Name: redash-admin"* ]]; then
     # Create custom admin group for appropriate Keycloak role
-    python ./manage.py groups create redash-admin --permissions admin,super_admin,create_dashboard,create_query,edit_dashboard,edit_query,view_query,view_source,execute_query,list_users,schedule_query,list_dashboards,list_alerts,list_data_sources
+    python ./manage.py groups create redash-admin --permissions $default_admin_permissions
     fi
 {{- end }}

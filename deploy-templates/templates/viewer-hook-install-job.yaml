@@ -18,8 +18,6 @@ spec:
   template:
     metadata:
       name: {{ .Values.redash.instance.name.viewer }}
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
         app.kubernetes.io/instance: {{ .Values.redash.instance.name.viewer }}
@@ -37,8 +35,6 @@ spec:
         env:
           - name: REDASH_ROUTE_PREFIX
             value: 'reports'
-          - name: REDASH_DATABASE_HOSTNAME
-            value: {{ .Values.redash.instance.name.viewer }}-postgresql
           - name: REDASH_REDIS_HOSTNAME
             value: {{ .Values.redash.instance.name.viewer }}-redis-master
           - name: REDASH_SAML_ENTITY_ID

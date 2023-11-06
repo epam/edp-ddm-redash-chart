@@ -40,7 +40,6 @@ spec:
       {{- toYaml .Values.metrics.podAnnotations | nindent 8 }}
       {{- end }}
         backup.velero.io/backup-volumes: "redis-data"
-        sidecar.istio.io/inject: "false"
     spec:
       {{- include "redis.imagePullSecrets" . | nindent 6 }}
       {{- if .Values.securityContext.enabled }}
@@ -213,7 +212,10 @@ spec:
           {{- else if .Values.master.customReadinessProbe }}
           readinessProbe: {{- toYaml .Values.master.customReadinessProbe | nindent 12 }}
           {{- end }}
-          resources: {{- toYaml .Values.master.resources | nindent 12 }}
+          {{- if .Values.global.container.requestsLimitsEnabled }}
+          resources:
+            {{- toYaml .Values.global.registry.redashViewerRedisMaster.container.resources | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: health
               mountPath: /health

@@ -19,8 +19,6 @@ spec:
   template:
     metadata:
       name: {{ .Values.redash.instance.name.admin }}
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app.kubernetes.io/name: {{ .Values.redash.instance.name.admin }}
         app.kubernetes.io/instance: {{ .Values.redash.instance.name.admin }}
@@ -43,8 +41,6 @@ spec:
         env:
           - name: REDASH_ROUTE_PREFIX
             value: 'reports'
-          - name: REDASH_DATABASE_HOSTNAME
-            value: {{ .Values.redash.instance.name.admin }}-postgresql
           - name: REDASH_REDIS_HOSTNAME
             value: {{ .Values.redash.instance.name.admin }}-redis-master
           - name: REDASH_SAML_SSO_URL

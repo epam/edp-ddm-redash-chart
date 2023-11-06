@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: migrate-redash-script-one-time-INSTANCE_NAME
+    rules:
+      - apiGroups: [""]
+        resources: ["pods/exec"]
+        verbs: ["create"]
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["get"]
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["list"]
+      - apiGroups: ["apps"]
+        resources: ["deployments/scale"]
+        verbs: ["get","update"]
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["create"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get","list","watch"]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+        name: migrate-redash-script-one-time-INSTANCE_NAME
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: migrate-redash-script-one-time-INSTANCE_NAME
+    subjects:
+      - kind: ServiceAccount
+        name: migrate-redash-script-one-time-INSTANCE_NAME
+  - kind: ServiceAccount
+    apiVersion: v1
+    metadata:
+      name: migrate-redash-script-one-time-INSTANCE_NAME
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: migrate-redash-script-one-time-INSTANCE_NAME
+    data:
+      migrate-database.sh: |
+        #!/usr/bin/env bash
+        if [[ $(oc get pods $REDASHSQL_POD_NAME --ignore-not-found) ]];then
+            REDASH_PASSWORD=$(oc get secret ${REDASH_SECRET_NAME} -o jsonpath='{.data.postgresqlPassword}' | base64 -d)
+            oc scale deployment -l app.kubernetes.io/component=server,app.kubernetes.io/instance=redash-$ROLE --replicas 0
+            sleep 30
+            oc exec -it $REDASHSQL_POD_NAME  -- bash -c 'export PGPASSWORD='$REDASH_PASSWORD'; pg_dump -Uredash redash -c -f /tmp/database_dump.sql'
+            oc scale deployment -l app.kubernetes.io/component=server,app.kubernetes.io/instance=redash-$ROLE --replicas 1
+            oc cp $REDASHSQL_POD_NAME:/tmp/database_dump.sql database_dump.sql
+            oc cp  -c database database_dump.sql $ANALYTICAL_POD_NAME:/tmp/${REDASHSQL_POD_NAME}_dump.sql
+            oc exec -c database -it $ANALYTICAL_POD_NAME  -- bash -c 'export PGPASSWORD='$ANALYTICAL_PG_PASSWORD'; psql -Upostgres -d redash_'$ROLE' < /tmp/'$REDASHSQL_POD_NAME'_dump.sql'
+            oc exec -c database -it $ANALYTICAL_POD_NAME  -- bash -c ' rm /tmp/'$REDASHSQL_POD_NAME'_dump.sql'
+            oc exec -c database -it $ANALYTICAL_POD_NAME  -- bash -c 'export PGPASSWORD='$ANALYTICAL_PG_PASSWORD';for tbl in `psql -Upostgres -qAt -c "select tablename from pg_tables where schemaname = '\'public\'';" redash_'${ROLE}'` ; do  psql -Upostgres -c "alter table \"$tbl\" owner to \"'${USER}'\"" redash_'${ROLE}' ; done'
+            oc create configmap "migration-indicator-redash-${ROLE}" --from-literal=migration=success
+        else
+            oc create configmap "migration-indicator-redash-${ROLE}" --from-literal=migration=skipped
+        fi
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: migrate-redash-script-one-time-INSTANCE_NAME
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: wait-for-database
+              env:
+                - name: ANALYTICAL_HOST
+                  value: citus-master-rep
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: analytical-pguser-postgres
+              image: 'postgres:14-alpine'
+              command:
+                - sh
+                - -c
+                - while ! psql -Upostgres -h ${ANALYTICAL_HOST} -lst | cut -d \| -f 1 | grep -qw redash_INSTANCE_NAME ;do echo "waiting for database";sleep 10; done
+          containers:
+            - name: migration
+              env:
+                - name: ANALYTICAL_POD_NAME
+                  value: REPLACE_ANALYTICAL_POD
+                - name: REDASHSQL_POD_NAME
+                  value: REPLACE_REDASHQL_POD_NAME
+                - name: USER
+                  value: REPLACE_USER
+                - name: ROLE
+                  value: INSTANCE_NAME
+                - name: REDASH_SECRET_NAME
+                  value: DATABASE_SECRET_NAME
+                - name: ANALYTICAL_PG_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: analytical-pguser-postgres
+              volumeMounts:
+                - mountPath: /opt/script
+                  name: script
+              image: DOCKER_URL/redash-migration:1.9.7.1
+              command:
+              - bash
+              - /opt/script/migrate-database.sh
+          restartPolicy: Never
+          serviceAccountName: migrate-redash-script-one-time-INSTANCE_NAME
+          volumes:
+            - name: script
+              configMap:
+                name: migrate-redash-script-one-time-INSTANCE_NAME

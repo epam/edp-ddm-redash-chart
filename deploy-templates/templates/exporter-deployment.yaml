@@ -14,14 +14,16 @@ spec:
       labels:
         app: {{ .Values.exporter.name }}
         collect.logs: "plain-text"
-      annotations:
-        sidecar.istio.io/inject: "false"
     spec:
       containers:
       - name: {{ .Values.exporter.name }}
         image: {{ template "imageRegistry" . -}} {{ .Values.exporter.image }}
         command: ["sh", "-c"]
         args: ["/redash-exporter -redashHost {{ template "redashHost" . }} -redashScheme https -redashPort 443"]
+        {{- if .Values.global.container.requestsLimitsEnabled }}
+        resources:
+          {{- toYaml .Values.global.registry.redashExporter.container.resources | nindent 10 }}
+        {{- end }}
         ports:
           - name: metrics
             containerPort: 9295

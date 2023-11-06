@@ -1,8 +1,62 @@
 ## Default values for Redash.
 ## This is a YAML-formatted file.
 global:
-  disableRequestsLimits: false
+  container:
+    requestsLimitsEnabled: true
   deploymentMode: development
+  registry:
+    redashAdmin:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+    redashAdminAdhocworker:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+    redashAdminRedisMaster:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+    redashAdminScheduler:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+    redashExporter:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+    redashViewer:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+      hpa:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+      replicas: 1
+    redashViewerAdhocworker:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+      replicas: 1
+    redashViewerRedisMaster:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+    redashViewerScheduler:
+      container:
+        resources:
+          requests: {}
+          limits: {}
+
 
 name: redash
 exporter:
@@ -44,7 +98,7 @@ image:
   version: 1.5.0-SNAPSHOT.94
   # image.pullPolicy - Image pull policy
   pullPolicy: IfNotPresent
-  redashPublisher: report-publisher-master:1.7.0.13
+  redashPublisher: report-publisher-1-9-8:1.9.8.1
 
 # imagePullSecrets -- Name(s) of secrets to use if pulling images from a private registry
 imagePullSecrets: []
@@ -327,6 +381,8 @@ redash:
   # -- `REDASH_WEB_WORKERS` value. How many processes will gunicorn spawn to handle web requests.
   # @default -- 4
   webWorkers: ""
+  # -- `REDASH_WEB_TIMEOUT` value. How long will gunicorn wait for a request to complete.
+  webTimeout: 30
   ## End primary Redash configuration
   # redash.existingSecret -- Name of existing secret to use instead of either the values above
   ## This secret must contain keys matching the items marked "Stored as a Secret value" above.
@@ -367,8 +423,7 @@ server:
   affinity: {}
 
   # server.podAnnotations -- Annotations for server pod assignment [ref](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
-  podAnnotations:
-    sidecar.istio.io/inject: "false"
+  podAnnotations: {}
 
 service:
   # service.annotations -- Annotations to add to the service
@@ -430,8 +485,7 @@ adhocWorker:
   affinity: {}
 
   # adhocWorker.podAnnotations -- Annotations for adhoc worker pod assignment [ref](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
-  podAnnotations:
-    sidecar.istio.io/inject: "false"
+  podAnnotations: {}
 
 ## Configuration for Redash scheduled workers
 scheduler:
@@ -463,8 +517,7 @@ scheduler:
   affinity: {}
 
   # scheduler.podAnnotations -- Annotations for scheduler pod assignment [ref](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
-  podAnnotations:
-    sidecar.istio.io/inject: "false"
+  podAnnotations: {}
 
 # externalPostgreSQL -- External PostgreSQL configuration. To use an external PostgreSQL instead of the automatically deployed postgresql chart: set postgresql.enabled to false then uncomment and configure the externalPostgreSQL connection URL (e.g. postgresql://user:pass@host:5432/database)
 externalPostgreSQL:
@@ -481,6 +534,16 @@ externalPostgreSQLSecret:
 postgresql:
   # postgresql.enabled -- Whether to deploy a PostgreSQL server to satisfy the applications database requirements. To use an external PostgreSQL set this to false and configure the externalPostgreSQL parameter.
   enabled: true
+  connectionParam:
+    admin:
+      dbName: redash_admin
+      dbUser: redash_admin_role
+    viewer:
+      dbName: redash_viewer
+      dbUser: redash_viewer_role
+    common:
+      dbHost: analytical-primary
+
   image:
     # postgresql.image.tag -- Bitnami supported version close to the one specified in Redash [setup docker-compose.yml](https://github.com/getredash/setup/blob/master/data/docker-compose.yml)
     tag: "14.5.0-debian-11-r28"

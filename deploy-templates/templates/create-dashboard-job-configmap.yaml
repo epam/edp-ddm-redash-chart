@@ -12,9 +12,6 @@ data:
         "helm.sh/hook": post-install,post-upgrade
     spec:
       template:
-        metadata:
-          annotations:
-            sidecar.istio.io/inject: "false"
         spec:
           {{- with .Values.imagePullSecrets }}
           imagePullSecrets:
@@ -60,7 +57,7 @@ data:
                   subPath: publish-dashboard.sh
               env:
                 - name: REDASH_DATABASE_HOSTNAME
-                  value: {{ .Values.redash.instance.name.viewer }}-postgresql
+                  value: {{ .Values.postgresql.connectionParam.common.dbHost }}
                 - name: REDASH_REDIS_HOSTNAME
                   value: {{ .Values.redash.instance.name.viewer }}-redis-master
                 - name: SYSTEM_ADMIN_PASS

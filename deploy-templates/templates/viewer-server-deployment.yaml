@@ -10,7 +10,9 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: server
 spec:
-  replicas: {{ .Values.server.replicaCount }}
+  {{- if not .Values.global.registry.redashViewer.hpa.enabled }}
+  replicas: {{ .Values.global.registry.redashViewer.replicas }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Values.redash.instance.name.viewer }}
@@ -40,7 +42,7 @@ spec:
           image: "{{ .Values.image.name }}:{{ .Values.image.version }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", ". /config/dynamicenv.sh && /app/bin/docker-entrypoint server"]
+          args: ["-c", "python3 ./translate.py && . /config/dynamicenv.sh && /app/bin/docker-entrypoint server"]
           lifecycle:
             postStart:
               exec:
@@ -65,10 +67,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.redash.system.admin.secret }}
                   key: email
+            - name: LANGUAGE
+              value: {{ .Values.global.language }}
             - name: REDASH_ROUTE_PREFIX
               value: 'reports'
-            - name: REDASH_DATABASE_HOSTNAME
-              value: {{ .Values.redash.instance.name.viewer }}-postgresql
             - name: REDASH_RATELIMIT_ENABLED
               value: 'false'
             - name: REDASH_REDIS_HOSTNAME
@@ -111,9 +113,9 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
-          {{- if not .Values.global.disableRequestsLimits }}
+          {{- if .Values.global.container.requestsLimitsEnabled }}
           resources:
-{{ toYaml .Values.server.resources | indent 12 }}
+            {{- toYaml .Values.global.registry.redashViewer.container.resources | nindent 12 }}
           {{- end }}
       volumes:
         - name: officer-config
@@ -123,6 +125,9 @@ spec:
         - name: config
           configMap:
             name: {{ include "redash.fullname" . }}
+        - name: migration-indicator
+          configMap:
+            name: migration-indicator-{{ .Values.redash.instance.name.viewer }}
     {{- with .Values.server.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
